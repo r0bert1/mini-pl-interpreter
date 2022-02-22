@@ -6,4 +6,5 @@
 | 14.2. | 2.0              | Started working on lexer                                          |
 | 15.2. | 1.0              | Installed python 3.10 to be able to use the new match case syntax |
 | 15.2. | 2.0              | Finished simple calculator lexer                                  |
-| total | 3.5              |                                                                   |
+| 22.2. | 0.5              | Refactoring lexer, moved token class into its own file            |
+| total | 4.0              |                                                                   |
