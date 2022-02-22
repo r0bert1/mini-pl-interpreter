@@ -1,10 +1,4 @@
-class Token:
-    def __init__(self, type, value=None):
-        self.type = type
-        self.value = value
-
-    def __repr__(self):
-        return self.type + (f":{self.value}" if self.value != None else "")
+from .tokens import Token, TokenType
 
 class Lexer:
 	def __init__(self, text):
@@ -22,26 +16,26 @@ class Lexer:
 			match self.current_char:
 				case ' '|'\n'|'\t':
 					self.get_next_char()
-				case '+':
-					self.get_next_char()
-					yield Token('PLUS')
-				case '-':
-					self.get_next_char()
-					yield Token('MINUS')
-				case '*':
-					self.get_next_char()
-					yield Token('MULTIPLY')
-				case '/':
-					self.get_next_char()
-					yield Token('DIVIDE')
-				case '(':
-					self.get_next_char()
-					yield Token('LPAREN')
-				case ')':
-					self.get_next_char()
-					yield Token('RPAREN')
 				case '.'|'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9':
 					yield self.generate_number()
+				case '+':
+					self.get_next_char()
+					yield Token(TokenType.PLUS)
+				case '-':
+					self.get_next_char()
+					yield Token(TokenType.MINUS)
+				case '*':
+					self.get_next_char()
+					yield Token(TokenType.MULTIPLY)
+				case '/':
+					self.get_next_char()
+					yield Token(TokenType.DIVIDE)
+				case '(':
+					self.get_next_char()
+					yield Token(TokenType.LPAREN)
+				case ')':
+					self.get_next_char()
+					yield Token(TokenType.RPAREN)
 				case _:
 					raise Exception(f"Unrecognized character: '{self.current_char}'")
 
@@ -55,7 +49,6 @@ class Lexer:
 				decimal_point_count += 1
 				if decimal_point_count > 1:
 					raise Exception(f"Invalid token: '{number_str}'")
-					break
 			
 			number_str += self.current_char
 			self.get_next_char()
@@ -65,4 +58,4 @@ class Lexer:
 		if number_str.endswith('.'):
 			number_str += '0'
 
-		return Token('NUMBER', float(number_str))
+		return Token(TokenType.NUMBER, float(number_str))
