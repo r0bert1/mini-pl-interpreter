@@ -1,4 +1,4 @@
-from .tokens import Token, TokenType
+from tokens import Token, TokenType
 
 class Lexer:
 	def __init__(self, text):
