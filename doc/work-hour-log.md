@@ -9,4 +9,5 @@
 | 22.2. | 0.5              | Refactoring lexer, moved token class into its own file            |
 | 24.2. | 3.0              | Added parser for calculator language                              |
 | 25.2. | 1.0              | Finished calculator interpreter                                   |
-| total | 10.0             |                                                                   |
+| 2.3.  | 3.0              | Added error messages                                              |
+| total | 13.0             |                                                                   |

@@ -4,7 +4,7 @@ from interpreting.interpreter import Interpreter
 
 while True:
     text = input(">> ")
-    lexer = Lexer(text)
+    lexer = Lexer('<stdin>', text)
     tokens = lexer.generate_tokens()
     parser = Parser(tokens)
     tree = parser.parse()
