@@ -2,18 +2,18 @@ from enum import Enum
 from dataclasses import dataclass
 
 class TokenType(Enum):
-	NUMBER    = 0
-	PLUS      = 1
-	MINUS     = 2
-	MULTIPLY  = 3
-	DIVIDE    = 4
-	LPAREN    = 5
-	RPAREN    = 6
-	EQUALS    = 7
-	KEYWORD   = 8
-	IDENTIFIER= 9
+	INTEGER   = 0
+	FLOAT     = 1
+	PLUS      = 2
+	MINUS     = 3
+	MULTIPLY  = 4
+	DIVIDE    = 5
+	LPAREN    = 6
+	RPAREN    = 7
+	EQUALS    = 8
+	KEYWORD   = 9
+	IDENTIFIER= 10
 
-@dataclass
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):
 		self.type = type
