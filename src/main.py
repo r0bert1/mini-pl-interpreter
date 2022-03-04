@@ -6,7 +6,7 @@ while True:
     text = input(">> ")
     lexer = Lexer('<stdin>', text)
     tokens = lexer.generate_tokens()
-    parser = Parser(tokens)
+    parser = Parser(list(tokens))
     tree = parser.parse()
     if not tree: continue
     interpreter = Interpreter()

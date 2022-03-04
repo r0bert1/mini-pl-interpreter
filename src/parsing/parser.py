@@ -1,15 +1,18 @@
 from tokens import TokenType
 from nodes import *
+from error import InvalidSyntaxError
 
 class Parser:
 	def __init__(self, tokens):
 		self.tokens = iter(tokens)
+		self.token_index = -1
 		self.advance()
 
 	def raise_error(self):
-		raise Exception("Invalid syntax")
+		raise InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, f"{self.current_token}")
 	
 	def advance(self):
+		self.token_index += 1
 		try:
 			self.current_token = next(self.tokens)
 		except StopIteration:
@@ -68,10 +71,6 @@ class Parser:
 		elif token.type == TokenType.NUMBER:
 			self.advance()
 			return NumberNode(token.value)
-
-		elif token.type == TokenType.PLUS:
-			self.advance()
-			return PlusNode(self.factor())
 		
 		elif token.type == TokenType.MINUS:
 			self.advance()
