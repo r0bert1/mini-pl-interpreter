@@ -12,4 +12,5 @@
 | 2.3.  | 3.0              | Added error messages                                              |
 | 3.3.  | 2.0              | Debugging error handling                                          |
 | 4.3.  | 1.0              | Refactoring lexer                                                 |
+| 14.3. | 4.0              | Debugging and refactoring parser                                  |
 | total | 16.0             |                                                                   |
