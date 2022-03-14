@@ -6,12 +6,12 @@ class Parser:
 	def __init__(self, tokens):
 		self.tokens = iter(tokens)
 		self.token_index = -1
-		self.advance()
+		self.get_next_token()
 
 	def raise_error(self):
 		raise InvalidSyntaxError(self.current_token.pos_start, self.current_token.pos_end, f"{self.current_token}")
 	
-	def advance(self):
+	def get_next_token(self):
 		self.token_index += 1
 		try:
 			self.current_token = next(self.tokens)
@@ -19,61 +19,44 @@ class Parser:
 			self.current_token = None
 
 	def parse(self):
-		if self.current_token == None:
-			return None
+		return self.expression()
 
-		result = self.expr()
-
-		if self.current_token != None:
-			self.raise_error()
-
-		return result
-
-	def expr(self):
-		result = self.term()
-
-		while self.current_token != None and self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
-			if self.current_token.type == TokenType.PLUS:
-				self.advance()
-				result = AddNode(result, self.term())
-			elif self.current_token.type == TokenType.MINUS:
-				self.advance()
-				result = SubtractNode(result, self.term())
-
-		return result
+	def expression(self):
+		return self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS))
 
 	def term(self):
-		result = self.factor()
+		return self.binary_op(self.factor, (TokenType.MULTIPLY, TokenType.DIVIDE))
 
-		while self.current_token != None and self.current_token.type in (TokenType.MULTIPLY, TokenType.DIVIDE):
-			if self.current_token.type == TokenType.MULTIPLY:
-				self.advance()
-				result = MultiplyNode(result, self.factor())
-			elif self.current_token.type == TokenType.DIVIDE:
-				self.advance()
-				result = DivideNode(result, self.factor())
+	def binary_op(self, function, op_tokens):
+		op_left_side = function()
+
+		while self.current_token != None and self.current_token.type in op_tokens:
+			op_token = self.current_token
+			self.get_next_token()
+			op_right_side = function()
+			op_left_side = BinaryOpNode(op_left_side, op_token, op_right_side)
 				
-		return result
+		return op_left_side
 
 	def factor(self):
 		token = self.current_token
 
 		if token.type == TokenType.LPAREN:
-			self.advance()
-			result = self.expr()
+			self.get_next_token()
+			result = self.expression()
 
 			if self.current_token.type != TokenType.RPAREN:
 				self.raise_error()
 			
-			self.advance()
+			self.get_next_token()
 			return result
 
-		elif token.type == TokenType.NUMBER:
-			self.advance()
+		elif token.type in (TokenType.INTEGER, TokenType.FLOAT):
+			self.get_next_token()
 			return NumberNode(token.value)
 		
 		elif token.type == TokenType.MINUS:
-			self.advance()
+			self.get_next_token()
 			return MinusNode(self.factor())
 		
 		self.raise_error()

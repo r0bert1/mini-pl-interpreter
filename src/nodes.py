@@ -8,36 +8,13 @@ class NumberNode:
 		return f"{self.value}"
 
 @dataclass
-class AddNode:
-	node_a: any
-	node_b: any
+class BinaryOpNode:
+	left_node: any
+	op_token: any
+	right_node: any
 
 	def __repr__(self):
-		return f"({self.node_a}+{self.node_b})"
-
-@dataclass
-class SubtractNode:
-	node_a: any
-	node_b: any
-
-	def __repr__(self):
-		return f"({self.node_a}-{self.node_b})"
-
-@dataclass
-class MultiplyNode:
-	node_a: any
-	node_b: any
-
-	def __repr__(self):
-		return f"({self.node_a}*{self.node_b})"
-
-@dataclass
-class DivideNode:
-	node_a: any
-	node_b: any
-
-	def __repr__(self):
-		return f"({self.node_a}/{self.node_b})"
+		return f"({self.left_node}, {self.op_token}, {self.right_node})"
 	
 @dataclass
 class MinusNode:
