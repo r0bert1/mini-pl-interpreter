@@ -59,8 +59,9 @@ class Lexer:
 					char = self.current_char
 					self.get_next_char()
 					return [], IllegalCharError(pos_start, self.pos, f"'{char}'")
-			
-		return tokens, None	
+		
+		tokens.append(Token(TokenType.EOF, pos_start=self.pos))
+		return tokens, None
 
 	def generate_number(self):
 		decimal_point_count = 0
