@@ -17,6 +17,14 @@ class BinaryOpNode:
 		return f"({self.left_node}, {self.op_token}, {self.right_node})"
 	
 @dataclass
+class UnaryOpNode:
+	op_token: any
+	node: any
+
+	def __repr__(self):
+		return f"({self.op_token}, {self.node})"
+
+@dataclass
 class MinusNode:
 	node: any
 

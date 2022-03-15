@@ -1,6 +1,7 @@
 from tokens import TokenType
 from nodes import *
 from error import InvalidSyntaxError
+from parsing.result import ParseResult
 
 class Parser:
 	def __init__(self, tokens):
@@ -19,7 +20,14 @@ class Parser:
 			self.current_token = None
 
 	def parse(self):
-		return self.expression()
+		result = self.expression()
+		if not result.error and self.current_token.type != TokenType.EOF:
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected '+', '-', '*' or '/'"
+			))
+		
+		return result
 
 	def expression(self):
 		return self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS))
@@ -28,35 +36,50 @@ class Parser:
 		return self.binary_op(self.factor, (TokenType.MULTIPLY, TokenType.DIVIDE))
 
 	def binary_op(self, function, op_tokens):
-		op_left_side = function()
+		result = ParseResult()
+		op_left_side = result.register(function())
+		if result.error: return result
 
 		while self.current_token != None and self.current_token.type in op_tokens:
 			op_token = self.current_token
-			self.get_next_token()
-			op_right_side = function()
+			result.register(self.get_next_token())
+			op_right_side = result.register(function())
+			if result.error: return result
 			op_left_side = BinaryOpNode(op_left_side, op_token, op_right_side)
 				
-		return op_left_side
+		return result.success(op_left_side)
+	
+
 
 	def factor(self):
+		result = ParseResult()
 		token = self.current_token
 
 		if token.type == TokenType.LPAREN:
-			self.get_next_token()
-			result = self.expression()
+			result.register(self.get_next_token())
+			expression = result.register(self.expression())
+			if result.error: return result
 
 			if self.current_token.type != TokenType.RPAREN:
-				self.raise_error()
-			
-			self.get_next_token()
-			return result
+				return result.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected ')'"
+				))
+
+			result.register(self.get_next_token())
+			return result.success(expression)
+
+		elif token.type in (TokenType.MINUS, TokenType.PLUS):
+			result.register(self.get_next_token())
+			factor = result.register(self.factor())
+			if result.error: return result
+			return result.success(UnaryOpNode(token, factor))
 
 		elif token.type in (TokenType.INTEGER, TokenType.FLOAT):
-			self.get_next_token()
-			return NumberNode(token.value)
+			result.register(self.get_next_token())
+			return result.success(NumberNode(token.value))
 		
-		elif token.type == TokenType.MINUS:
-			self.get_next_token()
-			return MinusNode(self.factor())
-		
-		self.raise_error()
+		return result.failure(InvalidSyntaxError(
+			token.pos_start, token.pos_end,
+			f'Unexpected token: {token}'
+		))

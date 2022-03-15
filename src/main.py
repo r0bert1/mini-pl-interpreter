@@ -4,15 +4,15 @@ from interpreting.interpreter import Interpreter
 
 while True:
     text = input(">> ")
-    
+
     lexer = Lexer('<stdin>', text)
     tokens, error = lexer.generate_tokens()
     if error: print(error)
-    else : print(tokens)
 
     parser = Parser(tokens)
     tree = parser.parse()
-    print(tree)
+    if tree.error: print(tree.error)
+    else: print(tree.node)
     
     """
     if not tree: continue
