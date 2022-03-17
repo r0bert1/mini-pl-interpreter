@@ -1,32 +1,77 @@
 from nodes import *
 from interpreting.values import Number
+from tokens import TokenType
+from interpreting.result import RunTimeResult
+from error import RunTimeError
 
 class Interpreter:
-	def evaluate(self, node):
+	def evaluate(self, node, context):
 		method_name = f'evaluate_{type(node).__name__}'
 		method = getattr(self, method_name)
-		return method(node)
+		return method(node, context)
+
+	def no_evaluate_method(self, node, context):
+		raise Exception(f"No evaluate_{type(node).__name__} method defined")
 		
-	def evaluate_NumberNode(self, node):
-		return Number(node.value)
+	def evaluate_NumberNode(self, node, context):
+		return RunTimeResult().success(
+			Number(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)
 
-	def evaluate_AddNode(self, node):
-		return Number(self.evaluate(node.node_a).value + self.evaluate(node.node_b).value)
+	def evaluate_BinaryOpNode(self, node, context):
+		result = RunTimeResult()
+		left_side = result.register(self.evaluate(node.left_node, context))
+		if result.error: return result
+		right_side = result.register(self.evaluate(node.right_node, context))
+		if result.error: return result
 
-	def evaluate_SubtractNode(self, node):
-		return Number(self.evaluate(node.node_a).value - self.evaluate(node.node_b).value)
+		if node.op_token.type == TokenType.PLUS:
+			value, error = left_side.plus(right_side)
 
-	def evaluate_MultiplyNode(self, node):
-		return Number(self.evaluate(node.node_a).value * self.evaluate(node.node_b).value)
+		if node.op_token.type == TokenType.MINUS:
+			value, error = left_side.minus(right_side)
 
-	def evaluate_DivideNode(self, node):
-		try:
-			return Number(self.evaluate(node.node_a).value / self.evaluate(node.node_b).value)
-		except:
-			raise Exception("Runtime math error")
+		if node.op_token.type == TokenType.MULTIPLY:
+			value, error = left_side.multiplied_by(right_side)
 
-	def evaluate_PlusNode(self, node):
-		return self.evaluate(node.node)
+		if node.op_token.type == TokenType.DIVIDE:
+			value, error = left_side.divided_by(right_side)
 
-	def evaluate_MinusNode(self, node):
-		return Number(-self.evaluate(node.node).value)
+		if error: return result.failure(error)
+
+		return result.success(value.set_pos(node.pos_start, node.pos_end))
+
+	def evaluate_UnaryOpNode(self, node, context):
+		result = RunTimeResult()
+		value = result.register(self.evaluate(node.node, context))
+		if result.error: return result
+
+		if node.op_token.type == TokenType.MINUS:
+			value, error = value.multiplied_by(-1)
+		
+		if error: return result.failure(error)
+		
+		return result.success(value.set_pos(node.pos_start, node.pos_end))
+
+	def evaluate_VarAccessNode(self, node, context):
+		result = RunTimeResult()
+		var_name = node.var_name_token.value
+		value = context.symbol_table.get(var_name)
+
+		if not value:
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"'{var_name}' is not defined"
+			))
+
+		value = value.copy().set_pos(node.pos_start, node.pos_end)
+		return result.success(value)
+
+	def evaluate_VarAssignNode(self, node, context):
+		result = RunTimeResult()
+		var_name = node.var_name_token.value
+		value = result.register(self.evaluate(node.value_node, context))
+		if result.error: return result
+
+		context.symbol_table.set(var_name, value)
+		return result.success(value)

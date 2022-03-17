@@ -14,4 +14,6 @@
 | 4.3.  | 1.0              | Refactoring lexer                                                 |
 | 14.3. | 4.0              | Debugging and refactoring parser                                  |
 | 15.3. | 2.0              | Added ParseResult class to help with error handling               |
-| total | 20.0             |                                                                   |
+| 17.3. | 2.0              | Added runtime error handling for division by zero                 |
+| 17.3. | 4.0              | Added variables                                                   |
+| total | 26.0             |                                                                   |

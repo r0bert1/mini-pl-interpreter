@@ -12,8 +12,15 @@ class Error(Exception):
 
 class IllegalCharError(Error):
     def __init__(self, pos_start, pos_end, details):
-        super().__init__(pos_start, pos_end, 'Illegal Character', details)
+        super().__init__(pos_start, pos_end, 'Illegal character', details)
 
 class InvalidSyntaxError(Error):
 	def __init__(self, pos_start, pos_end, details=''):
-		super().__init__(pos_start, pos_end, 'Invalid Syntax', details)
+		super().__init__(pos_start, pos_end, 'Invalid syntax', details)
+
+class RunTimeError(Error):
+	def __init__(self, pos_start, pos_end, details):
+		super().__init__(pos_start, pos_end, 'Runtime error', details)
+
+	def __str__(self):
+		return f'{self.error_name}: {self.details}'
