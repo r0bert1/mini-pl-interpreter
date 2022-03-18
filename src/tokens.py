@@ -14,6 +14,10 @@ class TokenType(Enum):
 	KEYWORD   = 9
 	IDENTIFIER= 10
 	EOF       = 11
+	ASSIGN    = 12
+	NOT       = 13
+	LT        = 14
+	AND       = 15
 
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):

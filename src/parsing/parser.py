@@ -32,7 +32,7 @@ class Parser:
 	def expression(self):
 		result = ParseResult()
 
-		if self.current_token.matches(TokenType.KEYWORD, 'VAR'):
+		if self.current_token.matches(TokenType.KEYWORD, 'var'):
 			result.register_advancement()
 			self.get_next_token()
 
@@ -46,10 +46,10 @@ class Parser:
 			result.register_advancement()
 			self.get_next_token()
 
-			if self.current_token.type != TokenType.EQUALS:
+			if self.current_token.type != TokenType.ASSIGN:
 				return result.failure(InvalidSyntaxError(
 					self.current_token.pos_start, self.current_token.pos_end,
-					"Expected '='"
+					"Expected ':='"
 				))
 
 			result.register_advancement()
@@ -59,12 +59,12 @@ class Parser:
 			return result.success(VarAssignNode(var_name, expression))
 
 
-		node = result.register(self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS)))
+		node = result.register(self.binary_op(self.comparison_expression, [TokenType.AND]))
 
 		if result.error:
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				"Expected 'VAR', int, float, identifier, '+', '-' or '('"
+				"Expected 'var', int, float, identifier, '+', '-' or '('"
 			))
 
 		return result.success(node)
@@ -129,3 +129,28 @@ class Parser:
 			token.pos_start, token.pos_end,
 			"Expected int, float, identifier, '+', '-' or '('"
 		))
+	
+	def comparison_expression(self):
+		result = ParseResult()
+
+		if self.current_token.type == TokenType.NOT:
+			op_token = self.current_token
+			result.register_advancement()
+			self.get_next_token()
+
+			node = result.register(self.comparison_expression())
+			if result.error: return result
+			return result.success(UnaryOpNode(op_token, node))
+
+		node = result.register(self.binary_op(self.arithmetic_expression, (TokenType.EQUALS, TokenType.LT)))
+
+		if result.error:
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				"Expected int, float, identifier, '+', '-', '(' or '!'"
+			))
+
+		return result.success(node)
+	
+	def arithmetic_expression(self):
+		return self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS))

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 class VarAccessNode:
 	def __init__(self, var_name_token):
 		self.var_name_token = var_name_token
@@ -39,15 +37,8 @@ class UnaryOpNode:
 	def __init__(self, op_token, node):
 		self.op_token = op_token
 		self.node = node
-		self.pos_start = self.op_tok.pos_start
+		self.pos_start = self.op_token.pos_start
 		self.pos_end = node.pos_end
 
 	def __repr__(self):
 		return f"({self.op_token}, {self.node})"
-
-@dataclass
-class MinusNode:
-	node: any
-
-	def __repr__(self):
-		return f"(-{self.node})"

@@ -24,3 +24,7 @@ class RunTimeError(Error):
 
 	def __str__(self):
 		return f'{self.error_name}: {self.details}'
+
+class ExpectedCharError(Error):
+	def __init__(self, pos_start, pos_end, details):
+		super().__init__(pos_start, pos_end, 'Expected Character', details)

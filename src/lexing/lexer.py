@@ -1,13 +1,13 @@
 from tokens import Token, TokenType
 from position import Position
-from error import IllegalCharError
+from error import IllegalCharError, ExpectedCharError
 import string
 
 WHITESPACE = ' \n\t'
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_AND_DIGITS = LETTERS + DIGITS
-KEYWORDS = ['VAR']
+KEYWORDS = ['var']
 
 class Lexer:
 	def __init__(self, file_name, text):
@@ -50,10 +50,21 @@ class Lexer:
 					self.get_next_char()
 				elif self.current_char == ')':
 					tokens.append(Token(TokenType.RPAREN, pos_start=self.pos))
-					self.get_next_char()					
+					self.get_next_char()
 				elif self.current_char == '=':
 					tokens.append(Token(TokenType.EQUALS, pos_start=self.pos))
-					self.get_next_char()					
+					self.get_next_char()
+				elif self.current_char == ':':
+					tokens.append(self.generate_assignment())
+				elif self.current_char == '!':
+					tokens.append(Token(TokenType.NOT, pos_start=self.pos))
+					self.get_next_char()
+				elif self.current_char == '<':
+					tokens.append(Token(TokenType.LT, pos_start=self.pos))
+					self.get_next_char()
+				elif self.current_char == '&':
+					tokens.append(Token(TokenType.AND, pos_start=self.pos))
+					self.get_next_char()
 				else:
 					pos_start = self.pos.copy()
 					char = self.current_char
@@ -94,3 +105,14 @@ class Lexer:
 		token_type = TokenType.KEYWORD if id in KEYWORDS else TokenType.IDENTIFIER
 
 		return Token(token_type, id, pos_start, self.pos)
+
+	def generate_assignment(self):
+		pos_start = self.pos.copy()
+		self.get_next_char()
+
+		if self.current_char == '=':
+			self.get_next_char()
+			return Token(TokenType.ASSIGN, pos_start=pos_start, pos_end=self.pos)
+
+		self.get_next_char()
+		return None, ExpectedCharError(pos_start, self.pos, "'=' (after ':')")

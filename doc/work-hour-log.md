@@ -16,4 +16,5 @@
 | 15.3. | 2.0              | Added ParseResult class to help with error handling               |
 | 17.3. | 2.0              | Added runtime error handling for division by zero                 |
 | 17.3. | 4.0              | Added variables                                                   |
-| total | 26.0             |                                                                   |
+| 18.3. | 3.0              | Added '<', '=', '&' and '!' operators                             |
+| total | 29.0             |                                                                   |

@@ -37,6 +37,15 @@ class Interpreter:
 		if node.op_token.type == TokenType.DIVIDE:
 			value, error = left_side.divided_by(right_side)
 
+		if node.op_token.type == TokenType.EQUALS:
+			value, error = left_side.equals(right_side)
+
+		if node.op_token.type == TokenType.LT:
+			value, error = left_side.less_than(right_side)
+
+		if node.op_token.type == TokenType.AND:
+			value, error = left_side.and_(right_side)
+
 		if error: return result.failure(error)
 
 		return result.success(value.set_pos(node.pos_start, node.pos_end))
@@ -47,7 +56,10 @@ class Interpreter:
 		if result.error: return result
 
 		if node.op_token.type == TokenType.MINUS:
-			value, error = value.multiplied_by(-1)
+			value, error = value.multiplied_by(Number(-1))
+
+		if node.op_token.type == TokenType.NOT:
+			value, error = value.not_()
 		
 		if error: return result.failure(error)
 		
