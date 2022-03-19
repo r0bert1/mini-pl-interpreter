@@ -87,3 +87,23 @@ class Interpreter:
 
 		context.symbol_table.set(var_name, value)
 		return result.success(value)
+
+	def evaluate_ForNode(self, node, context):
+		result = RunTimeResult()
+
+		start_value = result.register(self.evaluate(node.start_value_node, context))
+		if result.error: return result
+
+		end_value = result.register(self.evaluate(node.end_value_node, context))
+		if result.error: return result
+
+		i = start_value.value
+		
+		while i < end_value.value:
+			context.symbol_table.set(node.var_name_token.value, Number(i))
+			i += 1
+
+			result.register(self.evaluate(node.body_node, context))
+			if result.error: return result
+
+		return result.success(None)

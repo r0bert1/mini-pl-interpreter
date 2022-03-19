@@ -3,21 +3,21 @@ from dataclasses import dataclass
 
 class TokenType(Enum):
 	INTEGER   = 0
-	FLOAT     = 1
-	PLUS      = 2
-	MINUS     = 3
-	MULTIPLY  = 4
-	DIVIDE    = 5
-	LPAREN    = 6
-	RPAREN    = 7
-	EQUALS    = 8
-	KEYWORD   = 9
-	IDENTIFIER= 10
-	EOF       = 11
-	ASSIGN    = 12
-	NOT       = 13
-	LT        = 14
-	AND       = 15
+	PLUS      = 1
+	MINUS     = 2
+	MULTIPLY  = 3
+	DIVIDE    = 4
+	LPAREN    = 5
+	RPAREN    = 6
+	EQUALS    = 7
+	KEYWORD   = 8
+	IDENTIFIER= 9
+	EOF       = 10
+	ASSIGN    = 11
+	NOT       = 12
+	LT        = 13
+	AND       = 14
+	RANGE     = 15
 
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):

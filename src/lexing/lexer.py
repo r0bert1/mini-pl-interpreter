@@ -7,7 +7,7 @@ WHITESPACE = ' \n\t'
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_AND_DIGITS = LETTERS + DIGITS
-KEYWORDS = ['var']
+KEYWORDS = ['var', 'for', 'in', 'do', 'end']
 
 class Lexer:
 	def __init__(self, file_name, text):
@@ -30,7 +30,7 @@ class Lexer:
 				if self.current_char in WHITESPACE:
 					self.get_next_char()
 				elif self.current_char in DIGITS:
-					tokens.append(self.generate_number())
+					tokens.append(self.generate_integer())
 				elif self.current_char in LETTERS:
 					tokens.append(self.generate_identifier())
 				elif self.current_char == '+':
@@ -65,6 +65,8 @@ class Lexer:
 				elif self.current_char == '&':
 					tokens.append(Token(TokenType.AND, pos_start=self.pos))
 					self.get_next_char()
+				elif self.current_char == '.':
+					tokens.append(self.generate_range())
 				else:
 					pos_start = self.pos.copy()
 					char = self.current_char
@@ -74,25 +76,16 @@ class Lexer:
 		tokens.append(Token(TokenType.EOF, pos_start=self.pos))
 		return tokens, None
 
-	def generate_number(self):
-		decimal_point_count = 0
+	def generate_integer(self):
 		number_str = self.current_char
 		pos_start = self.pos.copy()
 		self.get_next_char()
 
-		while self.current_char != None and (self.current_char == '.' or self.current_char in DIGITS):
-			if self.current_char == '.':
-				if decimal_point_count == 1: break
-				decimal_point_count += 1
-				number_str += '.'
-			else:
-				number_str += self.current_char
+		while self.current_char != None and self.current_char in DIGITS:
+			number_str += self.current_char
 			self.get_next_char()
 			
-		if decimal_point_count == 0:
-			return Token(TokenType.INTEGER, int(number_str), pos_start, self.pos)
-		else:
-			return Token(TokenType.FLOAT, float(number_str), pos_start, self.pos)
+		return Token(TokenType.INTEGER, int(number_str), pos_start, self.pos)
 
 	def generate_identifier(self):
 		id = ''
@@ -116,3 +109,14 @@ class Lexer:
 
 		self.get_next_char()
 		return None, ExpectedCharError(pos_start, self.pos, "'=' (after ':')")
+
+	def generate_range(self):
+		pos_start = self.pos.copy()
+		self.get_next_char()
+
+		if self.current_char == '.':
+			self.get_next_char()
+			return Token(TokenType.RANGE, pos_start=pos_start, pos_end=self.pos)
+
+		self.get_next_char()
+		return None, ExpectedCharError(pos_start, self.pos, "'.' (after '.')")
