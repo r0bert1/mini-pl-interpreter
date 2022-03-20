@@ -18,4 +18,5 @@
 | 17.3. | 4.0              | Added variables                                                   |
 | 18.3. | 3.0              | Added '<', '=', '&' and '!' operators                             |
 | 19.3. | 3.0              | Added for loop                                                    |
-| total | 32.0             |                                                                   |
+| 19.3. | 1.0              | Added strings                                                     |
+| total | 33.0             |                                                                   |

@@ -113,6 +113,11 @@ class Parser:
 			self.get_next_token()
 			return result.success(VarAccessNode(token))
 
+		elif token.type == TokenType.STRING:
+			result.register_advancement()
+			self.get_next_token()
+			return result.success(StringNode(token))
+
 		elif token.type in (TokenType.MINUS, TokenType.PLUS):
 			result.register_advancement()
 			self.get_next_token()

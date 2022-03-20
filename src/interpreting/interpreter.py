@@ -1,5 +1,5 @@
 from nodes import *
-from interpreting.values import Number
+from interpreting.values import Number, String
 from tokens import TokenType
 from interpreting.result import RunTimeResult
 from error import RunTimeError
@@ -16,6 +16,11 @@ class Interpreter:
 	def evaluate_NumberNode(self, node, context):
 		return RunTimeResult().success(
 			Number(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)
+
+	def evaluate_StringNode(self, node, context):
+		return RunTimeResult().success(
+			String(node.token.value).set_context(context).set_pos(node.pos_start, node.pos_end)
 		)
 
 	def evaluate_BinaryOpNode(self, node, context):

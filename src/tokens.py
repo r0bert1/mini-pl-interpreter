@@ -18,6 +18,7 @@ class TokenType(Enum):
 	LT        = 13
 	AND       = 14
 	RANGE     = 15
+	STRING    = 16
 
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):

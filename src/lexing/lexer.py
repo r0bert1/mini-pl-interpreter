@@ -33,6 +33,8 @@ class Lexer:
 					tokens.append(self.generate_integer())
 				elif self.current_char in LETTERS:
 					tokens.append(self.generate_identifier())
+				elif self.current_char == '"':
+					tokens.append(self.generate_string())
 				elif self.current_char == '+':
 					tokens.append(Token(TokenType.PLUS, pos_start=self.pos))
 					self.get_next_char()
@@ -120,3 +122,28 @@ class Lexer:
 
 		self.get_next_char()
 		return None, ExpectedCharError(pos_start, self.pos, "'.' (after '.')")
+
+	def generate_string(self):
+		string = ''
+		pos_start = self.pos.copy()
+		escape_character = False
+		self.get_next_char()
+
+		escape_characters = {
+			'n': '\n',
+			't': '\t'
+		}
+
+		while self.current_char != None and (self.current_char != '"' or escape_character):
+			if escape_character:
+				string += escape_characters.get(self.current_char, self.current_char)
+			else:
+				if self.current_char == '\\':
+					escape_character = True
+				else:
+					string += self.current_char
+			self.get_next_char()
+			escape_character = False
+		
+		self.get_next_char()
+		return Token(TokenType.STRING, string, pos_start, self.pos)

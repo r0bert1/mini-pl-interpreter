@@ -1,8 +1,7 @@
 from error import RunTimeError
 
-class Number:
-	def __init__(self, value):
-		self.value = value
+class Value:
+	def __init__(self):
 		self.set_pos()
 		self.set_context()
 
@@ -14,6 +13,21 @@ class Number:
 	def set_context(self, context=None):
 		self.context = context
 		return self
+
+	def illegal_operation(self, other=None):
+		if not other: other = self
+		return RunTimeError(
+			self.pos_start, other.pos_end,
+			'Illegal operation'
+		)
+	
+	def __repr__(self):
+		return f'"{self.value}"'
+
+class Number(Value):
+	def __init__(self, value):
+		super().__init__()
+		self.value = value
 
 	def plus(self, other):
 		if isinstance(other, Number):
@@ -58,5 +72,22 @@ class Number:
 		copy.set_context(self.context)
 		return copy
 
-	def __repr__(self):
-		return str(self.value)
+class String(Value):
+	def __init__(self, value):
+		super().__init__()
+		self.value = value
+
+	def plus(self, other):
+		if isinstance(other, String):
+			return String(self.value + other.value).set_context(self.context), None
+		else:
+			return None, Value.illegal_operation(self, other)
+
+	def is_true(self):
+		return len(self.value) > 0
+
+	def copy(self):
+		copy = String(self.value)
+		copy.set_pos(self.pos_start, self.pos_end)
+		copy.set_context(self.context)
+		return copy
