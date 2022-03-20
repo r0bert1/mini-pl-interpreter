@@ -58,6 +58,35 @@ class Parser:
 			if result.error: return result
 			return result.success(VarAssignNode(var_name, expression))
 
+		if self.current_token.matches(TokenType.KEYWORD, 'print'):
+			result.register_advancement()
+			self.get_next_token()
+
+			if self.current_token.type == TokenType.STRING:
+				value = self.current_token.value
+				result.register_advancement()
+				self.get_next_token()
+				return result.success(CallNode('print', value))
+
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				f"Expected string"
+			))
+
+		if self.current_token.matches(TokenType.KEYWORD, 'read'):
+			result.register_advancement()
+			self.get_next_token()
+
+			if self.current_token.type == TokenType.IDENTIFIER:
+				value = self.current_token.value
+				result.register_advancement()
+				self.get_next_token()
+				return result.success(CallNode('read', value))
+
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				f"Expected identifier"
+			))
 
 		node = result.register(self.binary_op(self.comparison_expression, [TokenType.AND]))
 
@@ -224,3 +253,21 @@ class Parser:
 		if result.error: return result
 
 		return result.success(ForNode(var_name, start_value, end_value, body))
+
+	def call(self):
+		res = ParseResult()
+		token = self.current_token
+
+		if token.matches(TokenType.KEYWORD, 'print'):
+			res.register_advancement()
+			self.get_next_token()
+
+			if self.current_token.type == TokenType.STRING:
+				res.register_advancement()
+				self.get_next_token()
+				return res.success(CallNode('print', self.current_token.value))
+
+		return res.failure(InvalidSyntaxError(
+			self.current_token.pos_start, self.current_token.pos_end,
+			f"Expected string"
+		))

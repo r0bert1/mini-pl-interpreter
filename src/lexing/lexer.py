@@ -7,7 +7,7 @@ WHITESPACE = ' \n\t'
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_AND_DIGITS = LETTERS + DIGITS
-KEYWORDS = ['var', 'for', 'in', 'do', 'end']
+KEYWORDS = ['var', 'for', 'in', 'do', 'end', 'print', 'read']
 
 class Lexer:
 	def __init__(self, file_name, text):

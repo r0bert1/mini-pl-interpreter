@@ -61,3 +61,8 @@ class ForNode:
 
 		self.pos_start = self.var_name_token.pos_start
 		self.pos_end = self.body_node.pos_end
+
+class CallNode:
+	def __init__(self, func_name, arg):
+		self.func_name = func_name
+		self.arg = arg

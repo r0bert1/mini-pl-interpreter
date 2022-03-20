@@ -19,4 +19,5 @@
 | 18.3. | 3.0              | Added '<', '=', '&' and '!' operators                             |
 | 19.3. | 3.0              | Added for loop                                                    |
 | 19.3. | 1.0              | Added strings                                                     |
-| total | 33.0             |                                                                   |
+| 19.3. | 4.0              | Added print and read functions                                    |
+| total | 37.0             |                                                                   |

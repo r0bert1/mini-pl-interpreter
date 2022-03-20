@@ -81,7 +81,7 @@ class Interpreter:
 				f"'{var_name}' is not defined"
 			))
 
-		value = value.copy().set_pos(node.pos_start, node.pos_end)
+		value = value.copy().set_pos(node.pos_start, node.pos_end).set_context(context)
 		return result.success(value)
 
 	def evaluate_VarAssignNode(self, node, context):
@@ -110,5 +110,19 @@ class Interpreter:
 
 			result.register(self.evaluate(node.body_node, context))
 			if result.error: return result
+
+		return result.success(None)
+
+	def evaluate_CallNode(self, node, context):
+		result = RunTimeResult()
+
+		if node.func_name == 'print':
+			print(node.arg)
+			return RunTimeResult().success(Number.null)
+
+		if node.func_name == 'read':
+			text = input()
+			context.symbol_table.set(node.arg, String(text))
+			return result.success(String(text))
 
 		return result.success(None)
