@@ -1,5 +1,4 @@
 from enum import Enum
-from dataclasses import dataclass
 
 class TokenType(Enum):
 	INTEGER   = 0
@@ -19,6 +18,7 @@ class TokenType(Enum):
 	AND       = 14
 	RANGE     = 15
 	STRING    = 16
+	NEWLINE   = 17
 
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):

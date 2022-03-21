@@ -1,5 +1,5 @@
 from nodes import *
-from interpreting.values import Number, String
+from interpreting.values import Number, String, List
 from tokens import TokenType
 from interpreting.result import RunTimeResult
 from error import RunTimeError
@@ -95,6 +95,7 @@ class Interpreter:
 
 	def evaluate_ForNode(self, node, context):
 		result = RunTimeResult()
+		elements = []
 
 		start_value = result.register(self.evaluate(node.start_value_node, context))
 		if result.error: return result
@@ -108,21 +109,37 @@ class Interpreter:
 			context.symbol_table.set(node.var_name_token.value, Number(i))
 			i += 1
 
-			result.register(self.evaluate(node.body_node, context))
+			elements.append(result.register(self.evaluate(node.body_node, context)))
 			if result.error: return result
 
-		return result.success(None)
+		return result.success(
+			Number.null if node.should_return_null else
+			List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)
 
 	def evaluate_CallNode(self, node, context):
 		result = RunTimeResult()
+		
 
-		if node.func_name == 'print':
-			print(node.arg)
+		if node.func_token.value == 'print':
+			print(node.arg_token.value)
 			return RunTimeResult().success(Number.null)
 
-		if node.func_name == 'read':
+		if node.func_token.value == 'read':
 			text = input()
-			context.symbol_table.set(node.arg, String(text))
+			context.symbol_table.set(node.arg_token.value, String(text))
 			return result.success(String(text))
 
 		return result.success(None)
+
+	def evaluate_ListNode(self, node, context):
+		res = RunTimeResult()
+		elements = []
+
+		for element_node in node.element_nodes:
+			elements.append(res.register(self.evaluate(element_node, context)))
+			if res.error: return res
+
+		return res.success(
+			List(elements).set_context(context).set_pos(node.pos_start, node.pos_end)
+		)

@@ -7,7 +7,7 @@ WHITESPACE = ' \n\t'
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_AND_DIGITS = LETTERS + DIGITS
-KEYWORDS = ['var', 'for', 'in', 'do', 'end', 'print', 'read']
+KEYWORDS = ['var', 'for', 'in', 'do', 'end', 'print', 'read', 'end']
 
 class Lexer:
 	def __init__(self, file_name, text):
@@ -28,6 +28,9 @@ class Lexer:
 
 		while self.current_char != None:
 				if self.current_char in WHITESPACE:
+					self.get_next_char()
+				elif self.current_char == ';':
+					tokens.append(Token(TokenType.NEWLINE, pos_start=self.pos))
 					self.get_next_char()
 				elif self.current_char in DIGITS:
 					tokens.append(self.generate_integer())

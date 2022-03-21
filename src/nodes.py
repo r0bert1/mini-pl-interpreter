@@ -53,16 +53,27 @@ class UnaryOpNode:
 		return f"({self.op_token}, {self.node})"
 
 class ForNode:
-	def __init__(self, var_name_token, start_value_node, end_value_node, body_node):
+	def __init__(self, var_name_token, start_value_node, end_value_node, body_node, should_return_null):
 		self.var_name_token = var_name_token
 		self.start_value_node = start_value_node
 		self.end_value_node = end_value_node
 		self.body_node = body_node
+		self.should_return_null = should_return_null
 
 		self.pos_start = self.var_name_token.pos_start
 		self.pos_end = self.body_node.pos_end
 
 class CallNode:
-	def __init__(self, func_name, arg):
-		self.func_name = func_name
-		self.arg = arg
+	def __init__(self, func_token, arg_token):
+		self.func_token = func_token
+		self.arg_token = arg_token
+
+		self.pos_start = self.func_token.pos_start
+		self.pos_end = self.arg_token.pos_end
+
+class ListNode:
+	def __init__(self, element_nodes, pos_start, pos_end):
+		self.element_nodes = element_nodes
+
+		self.pos_start = pos_start
+		self.pos_end = pos_end

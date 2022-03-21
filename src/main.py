@@ -11,6 +11,7 @@ global_symbol_table.set("true", Number.true)
 
 while True:
     text = input(">> ")
+    if text.strip() == "": continue
 
     lexer = Lexer('<stdin>', text)
     tokens, error = lexer.generate_tokens()

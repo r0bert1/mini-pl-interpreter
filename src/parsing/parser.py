@@ -5,7 +5,7 @@ from parsing.result import ParseResult
 
 class Parser:
 	def __init__(self, tokens):
-		self.tokens = iter(tokens)
+		self.tokens = tokens
 		self.token_index = -1
 		self.get_next_token()
 
@@ -14,13 +14,20 @@ class Parser:
 	
 	def get_next_token(self):
 		self.token_index += 1
-		try:
-			self.current_token = next(self.tokens)
-		except StopIteration:
-			self.current_token = None
+		self.update_current_token()
+		return self.current_token
+
+	def reverse(self, amount=1):
+		self.token_index -= amount
+		self.update_current_token()
+		return self.current_token
+
+	def update_current_token(self):
+		if self.token_index >= 0 and self.token_index < len(self.tokens):
+			self.current_token = self.tokens[self.token_index]
 
 	def parse(self):
-		result = self.expression()
+		result = self.statements()
 		if not result.error and self.current_token.type != TokenType.EOF:
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
@@ -28,6 +35,44 @@ class Parser:
 			))
 		
 		return result
+
+	def statements(self):
+		res = ParseResult()
+		statements = []
+		pos_start = self.current_token.pos_start.copy()
+
+		while self.current_token.type == TokenType.NEWLINE:
+			res.register_advancement()
+			self.get_next_token()
+
+		statement = res.register(self.expression())
+		if res.error: return res
+		statements.append(statement)
+
+		more_statements = True
+
+		while True:
+			newline_count = 0
+			while self.current_token.type == TokenType.NEWLINE:
+				res.register_advancement()
+				self.get_next_token()
+				newline_count += 1
+			if newline_count == 0:
+				more_statements = False
+      
+			if not more_statements: break
+			statement = res.try_register(self.expression())
+			if not statement:
+				self.reverse(res.to_reverse_count)
+				more_statements = False
+				continue
+			statements.append(statement)
+
+		return res.success(ListNode(
+			statements,
+			pos_start,
+			self.current_token.pos_end.copy()
+		))
 
 	def expression(self):
 		result = ParseResult()
@@ -59,14 +104,15 @@ class Parser:
 			return result.success(VarAssignNode(var_name, expression))
 
 		if self.current_token.matches(TokenType.KEYWORD, 'print'):
+			keyword_token = self.current_token
 			result.register_advancement()
 			self.get_next_token()
 
 			if self.current_token.type == TokenType.STRING:
-				value = self.current_token.value
+				string_token = self.current_token
 				result.register_advancement()
 				self.get_next_token()
-				return result.success(CallNode('print', value))
+				return result.success(CallNode(keyword_token, string_token))
 
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
@@ -74,14 +120,15 @@ class Parser:
 			))
 
 		if self.current_token.matches(TokenType.KEYWORD, 'read'):
+			keyword_token = self.current_token
 			result.register_advancement()
 			self.get_next_token()
 
 			if self.current_token.type == TokenType.IDENTIFIER:
-				value = self.current_token.value
+				id_token = self.current_token
 				result.register_advancement()
 				self.get_next_token()
-				return result.success(CallNode('read', value))
+				return result.success(CallNode(keyword_token, id_token))
 
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
@@ -219,7 +266,7 @@ class Parser:
 		if not self.current_token.matches(TokenType.KEYWORD, 'in'):
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				f"Expected 'for'"
+				f"Expected 'in'"
 			))
 		
 		result.register_advancement()
@@ -249,25 +296,25 @@ class Parser:
 		result.register_advancement()
 		self.get_next_token()
 
-		body = result.register(self.expression())
+		body = result.register(self.statements())
 		if result.error: return result
 
-		return result.success(ForNode(var_name, start_value, end_value, body))
+		if not self.current_token.matches(TokenType.KEYWORD, 'end'):
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				f"Expected 'end'"
+			))
 
-	def call(self):
-		res = ParseResult()
-		token = self.current_token
+		result.register_advancement()
+		self.get_next_token()
 
-		if token.matches(TokenType.KEYWORD, 'print'):
-			res.register_advancement()
-			self.get_next_token()
+		if not self.current_token.matches(TokenType.KEYWORD, 'for'):
+			return result.failure(InvalidSyntaxError(
+				self.current_token.pos_start, self.current_token.pos_end,
+				f"Expected 'for'"
+			))
 
-			if self.current_token.type == TokenType.STRING:
-				res.register_advancement()
-				self.get_next_token()
-				return res.success(CallNode('print', self.current_token.value))
+		result.register_advancement()
+		self.get_next_token()
 
-		return res.failure(InvalidSyntaxError(
-			self.current_token.pos_start, self.current_token.pos_end,
-			f"Expected string"
-		))
+		return result.success(ForNode(var_name, start_value, end_value, body, True))
