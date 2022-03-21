@@ -25,7 +25,7 @@ class Value:
 		)
 	
 	def __repr__(self):
-		return f'"{self.value}"'
+		return f'{self.value}'
 
 class Number(Value):
 	def __init__(self, value):

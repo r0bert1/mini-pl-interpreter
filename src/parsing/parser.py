@@ -91,6 +91,45 @@ class Parser:
 			result.register_advancement()
 			self.get_next_token()
 
+			if self.current_token.type != TokenType.TYPEDEF:
+				return result.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					"Expected :"
+				))
+
+			result.register_advancement()
+			self.get_next_token()
+
+			if not self.current_token.matches_one(TokenType.KEYWORD, ['int', 'string']):
+				return result.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					f"Expected 'int' or 'string'"
+				))
+			
+			var_type = self.current_token
+			result.register_advancement()
+			self.get_next_token()
+
+			if self.current_token.type == TokenType.NEWLINE:
+				return result.success(VarDeclarationNode(var_name, var_type))
+
+			if self.current_token.type != TokenType.ASSIGN:
+				return result.failure(InvalidSyntaxError(
+					self.current_token.pos_start, self.current_token.pos_end,
+					f"Expected ':='"
+				))
+
+			result.register_advancement()
+			self.get_next_token()
+			expression = result.register(self.expression())
+			if result.error: return result
+			return result.success(VarAssignNode(var_name, expression, var_type))
+
+		if self.current_token.type == TokenType.IDENTIFIER:
+			var_name = self.current_token
+			result.register_advancement()
+			self.get_next_token()
+
 			if self.current_token.type != TokenType.ASSIGN:
 				return result.failure(InvalidSyntaxError(
 					self.current_token.pos_start, self.current_token.pos_end,
@@ -99,7 +138,8 @@ class Parser:
 
 			result.register_advancement()
 			self.get_next_token()
-			expression = result.register(self.expression())
+			expression = result.register(self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS)))
+
 			if result.error: return result
 			return result.success(VarAssignNode(var_name, expression))
 
@@ -114,9 +154,15 @@ class Parser:
 				self.get_next_token()
 				return result.success(CallNode(keyword_token, string_token))
 
+			if self.current_token.type == TokenType.IDENTIFIER:
+				id_token = self.current_token
+				result.register_advancement()
+				self.get_next_token()
+				return result.success(CallNode(keyword_token, id_token))
+
 			return result.failure(InvalidSyntaxError(
 				self.current_token.pos_start, self.current_token.pos_end,
-				f"Expected string"
+				f"Expected string or identifier"
 			))
 
 		if self.current_token.matches(TokenType.KEYWORD, 'read'):
@@ -272,7 +318,8 @@ class Parser:
 		result.register_advancement()
 		self.get_next_token()
 
-		start_value = result.register(self.expression())
+		start_value = result.register(self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS)))
+		
 		if result.error: return result
 
 		if self.current_token.type != TokenType.RANGE:
@@ -284,7 +331,7 @@ class Parser:
 		result.register_advancement()
 		self.get_next_token()
 
-		end_value = result.register(self.expression())
+		end_value = result.register(self.binary_op(self.term, (TokenType.PLUS, TokenType.MINUS)))
 		if result.error: return result
 
 		if not self.current_token.matches(TokenType.KEYWORD, 'do'):

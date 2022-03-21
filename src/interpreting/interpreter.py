@@ -10,7 +10,7 @@ class Interpreter:
 		method = getattr(self, method_name)
 		return method(node, context)
 
-	def no_evaluate_method(self, node, context):
+	def no_evaluate_method(self, node):
 		raise Exception(f"No evaluate_{type(node).__name__} method defined")
 		
 	def evaluate_NumberNode(self, node, context):
@@ -73,7 +73,7 @@ class Interpreter:
 	def evaluate_VarAccessNode(self, node, context):
 		result = RunTimeResult()
 		var_name = node.var_name_token.value
-		value = context.symbol_table.get(var_name)
+		value = context.symbol_table.get(var_name)['value']
 
 		if not value:
 			return result.failure(RunTimeError(
@@ -88,14 +88,63 @@ class Interpreter:
 		result = RunTimeResult()
 		var_name = node.var_name_token.value
 		value = result.register(self.evaluate(node.value_node, context))
+		
+		if node.var_type_token:
+			var_type = node.var_type_token.value
+		else:
+			if not context.symbol_table.get(var_name):
+				return result.failure(RunTimeError(
+					node.pos_start, node.pos_end,
+					f"'{var_name}' is not defined"
+				))
+			var_type = context.symbol_table.get(var_name)['type']
+
+		if var_type == 'int' and not isinstance(value, Number):
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"Expected an integer to be assigned to '{var_name}'"
+			))
+		if var_type == 'string' and not isinstance(value, String):
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"Expected a string to be assigned to '{var_name}'"
+			))
 		if result.error: return result
 
-		context.symbol_table.set(var_name, value)
+		context.symbol_table.set(var_name, {'value': value, 'type': var_type})
 		return result.success(value)
+
+	def evaluate_VarDeclarationNode(self, node, context):
+		result = RunTimeResult()
+		var_name = node.var_name_token.value
+		var = context.symbol_table.get(var_name)
+		if var:
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"'{var_name}' is already declared"
+			))
+		
+		var_type = node.var_type_token.value
+		context.symbol_table.set(var_name, {'value': None, 'type': var_type})
+		return result.success(None)
 
 	def evaluate_ForNode(self, node, context):
 		result = RunTimeResult()
 		elements = []
+
+		var = context.symbol_table.get(node.var_name_token.value)
+
+		if not var:
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"'{node.var_name_token.value}' is not defined"
+			))
+
+		if var['type'] != 'int':
+			return result.failure(RunTimeError(
+				node.pos_start, node.pos_end,
+				f"Expected loop variable '{node.var_name_token.value}' to be an integer"
+			))
 
 		start_value = result.register(self.evaluate(node.start_value_node, context))
 		if result.error: return result
@@ -105,8 +154,8 @@ class Interpreter:
 
 		i = start_value.value
 		
-		while i < end_value.value:
-			context.symbol_table.set(node.var_name_token.value, Number(i))
+		while i < int(end_value.value):
+			context.symbol_table.set(node.var_name_token.value, {'value': Number(i), 'type': 'int'})
 			i += 1
 
 			elements.append(result.register(self.evaluate(node.body_node, context)))
@@ -119,16 +168,50 @@ class Interpreter:
 
 	def evaluate_CallNode(self, node, context):
 		result = RunTimeResult()
-		
 
 		if node.func_token.value == 'print':
-			print(node.arg_token.value)
-			return RunTimeResult().success(Number.null)
+			if node.arg_token.type == TokenType.STRING:
+				print(node.arg_token.value)
+				return RunTimeResult().success(Number.null)
+			
+			if node.arg_token.type == TokenType.IDENTIFIER:
+				var_name = node.arg_token.value
+				value = context.symbol_table.get(var_name)['value']
+
+				if not value:
+					return result.failure(RunTimeError(
+						node.pos_start, node.pos_end,
+						f"'{var_name}' is not defined"
+					))
+
+				print(value)
+				return RunTimeResult().success(Number.null)
 
 		if node.func_token.value == 'read':
+			var_name = node.arg_token.value
+			var_type = context.symbol_table.get(var_name)['type']
+
+			if not var_type:
+				return result.failure(RunTimeError(
+					node.pos_start, node.pos_end,
+					f"'{var_name}' has not been declared"
+				))
+			
 			text = input()
-			context.symbol_table.set(node.arg_token.value, String(text))
-			return result.success(String(text))
+			
+			if var_type == 'int':
+				try:
+					text = int(text)
+				except Exception:
+					return result.failure(RunTimeError(
+						node.pos_start, node.pos_end,
+						f"Expected an integer to be assigned to '{var_name}'"
+					))
+				context.symbol_table.set(node.arg_token.value, {'value': Number(text), 'type': var_type})
+				return result.success(Number(text))
+			else:
+				context.symbol_table.set(node.arg_token.value, {'value': String(text), 'type': var_type})
+				return result.success(String(text))
 
 		return result.success(None)
 

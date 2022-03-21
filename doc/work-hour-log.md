@@ -21,4 +21,5 @@
 | 19.3. | 1.0              | Added strings                                                     |
 | 20.3. | 4.0              | Added print and read functions                                    |
 | 21.3. | 4.0              | Added statements                                                  |
-| total | 41.0             |                                                                   |
+| 21.3. | 5.0              | Bugfixes + added support for executing file                       |
+| total | 46.0             |                                                                   |

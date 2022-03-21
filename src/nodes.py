@@ -6,12 +6,21 @@ class VarAccessNode:
 		self.pos_end = self.var_name_token.pos_end
 
 class VarAssignNode:
-	def __init__(self, var_name_token, value_node):
+	def __init__(self, var_name_token, value_node, var_type_token=None):
 		self.var_name_token = var_name_token
+		self.var_type_token = var_type_token
 		self.value_node = value_node
 
 		self.pos_start = self.var_name_token.pos_start
 		self.pos_end = self.value_node.pos_end
+
+class VarDeclarationNode:
+	def __init__(self, var_name_token, var_type_token):
+		self.var_name_token = var_name_token
+		self.var_type_token = var_type_token
+
+		self.pos_start = self.var_name_token.pos_start
+		self.pos_end = self.var_type_token.pos_end
 
 class NumberNode:
 	def __init__(self, token):

@@ -7,7 +7,7 @@ WHITESPACE = ' \n\t'
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
 LETTERS_AND_DIGITS = LETTERS + DIGITS
-KEYWORDS = ['var', 'for', 'in', 'do', 'end', 'print', 'read', 'end']
+KEYWORDS = ['var', 'for', 'in', 'do', 'end', 'print', 'read', 'end', 'int', 'string']
 
 class Lexer:
 	def __init__(self, file_name, text):
@@ -113,7 +113,7 @@ class Lexer:
 			return Token(TokenType.ASSIGN, pos_start=pos_start, pos_end=self.pos)
 
 		self.get_next_char()
-		return None, ExpectedCharError(pos_start, self.pos, "'=' (after ':')")
+		return Token(TokenType.TYPEDEF, pos_start=pos_start, pos_end=self.pos)
 
 	def generate_range(self):
 		pos_start = self.pos.copy()

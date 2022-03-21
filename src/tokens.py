@@ -19,6 +19,7 @@ class TokenType(Enum):
 	RANGE     = 15
 	STRING    = 16
 	NEWLINE   = 17
+	TYPEDEF   = 18
 
 class Token:
 	def __init__(self, type, value=None, pos_start=None, pos_end=None):
@@ -35,6 +36,12 @@ class Token:
 
 	def matches(self, type_, value):
 		return self.type == type_ and self.value == value
+
+	def matches_one(self, type_, values):
+		for value in values:
+			if self.type == type_ and self.value == value:
+				return True
+		return False
 
 	def __repr__(self):
 		return self.type.name + (f":{self.value}" if self.value != None else "")
